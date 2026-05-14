@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Replacer</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f4f4f2;
+  color: #1a1a1a;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+header {
+  background: #fff;
+  border-bottom: 1px solid #e0e0dc;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+header h1 { font-size: 16px; font-weight: 600; }
+.badge { font-size: 11px; background: #eef2ff; color: #4f5fa8; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* CENTER */
+.center-panel { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.pane { display: flex; flex-direction: column; flex: 1; overflow: hidden; background: #fff; }
+.pane + .pane { border-top: 1px solid #e0e0dc; }
+.pane-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px;
+  color: #888; padding: 10px 16px 6px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 8px;
+}
+.pane-label .pill {
+  font-size: 11px; background: #f0f0ee; color: #666;
+  padding: 1px 7px; border-radius: 10px; font-weight: 500;
+  text-transform: none; letter-spacing: 0;
+}
+#output {
+  flex: 1; padding: 14px 20px; overflow-y: auto;
+  font-size: 15px; line-height: 1.75; color: #1a1a1a;
+  white-space: pre-wrap; word-break: break-word; background: #fff;
+  cursor: pointer;
+}
+#output.empty-hint::before {
+  content: 'Your replaced text will appear here\2026 (click to copy)';
+  color: #bbb; font-style: italic; cursor: default;
+}
+#input-area {
+  flex: 1; padding: 14px 20px; font-family: inherit;
+  font-size: 15px; line-height: 1.75; color: #1a1a1a;
+  border: none; outline: none; resize: none;
+  background: #fafaf8; overflow-y: auto; width: 100%;
+}
+#input-area::placeholder { color: #bbb; font-style: italic; }
+
+/* RIGHT PANEL */
+.right-panel {
+  width: 320px; flex-shrink: 0;
+  border-left: 1px solid #e0e0dc;
+  background: #fff; display: flex;
+  flex-direction: column; overflow: hidden;
+}
+
+/* PRESETS */
+.presets-wrap { border-bottom: 1px solid #e8e8e4; flex-shrink: 0; padding: 10px 14px; }
+.section-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.6px; color: #888; margin-bottom: 8px;
+}
+.row { display: flex; gap: 5px; margin-bottom: 7px; }
+.row input {
+  flex: 1; font-family: inherit; font-size: 13px;
+  padding: 5px 8px; border: 1px solid #e0e0dc;
+  border-radius: 6px; outline: none; background: #fafaf8; color: #1a1a1a; min-width: 0;
+}
+.row input:focus { border-color: #a0a8d0; background: #fff; }
+.row input::placeholder { color: #bbb; }
+.btn-blue {
+  font-family: inherit; font-size: 12px; font-weight: 500;
+  padding: 5px 10px; background: #eef2ff; border: 1px solid #c8cce8;
+  border-radius: 6px; cursor: pointer; color: #4f5fa8; white-space: nowrap;
+}
+.btn-blue:hover { background: #dde4ff; }
+
+#presets-list { max-height: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin-bottom: 7px; }
+.preset-item {
+  display: flex; align-items: center; gap: 5px;
+  background: #f8f8f6; border: 1px solid #e8e8e4;
+  border-radius: 6px; padding: 4px 6px 4px 10px;
+}
+.preset-item:hover { border-color: #c8cce8; }
+.preset-name { flex: 1; font-size: 13px; color: #333; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.preset-name:hover { color: #4f5fa8; }
+.preset-count { font-size: 11px; color: #aaa; flex-shrink: 0; white-space: nowrap; }
+.icon-btn {
+  background: none; border: none; cursor: pointer; color: #ccc;
+  font-size: 16px; width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; flex-shrink: 0; line-height: 1;
+}
+.icon-btn:hover { background: #fef2f2; color: #e55; }
+.hint-text { font-size: 12px; color: #bbb; font-style: italic; }
+.ie-row { display: flex; gap: 5px; }
+.btn-ghost {
+  flex: 1; font-family: inherit; font-size: 12px; font-weight: 500;
+  padding: 5px 8px; background: #f4f4f2; border: 1px solid #e0e0dc;
+  border-radius: 6px; cursor: pointer; color: #555; text-align: center;
+}
+.btn-ghost:hover { background: #ebebea; }
+
+/* PAIRS AREA */
+.pairs-wrap { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.pairs-header { padding: 10px 14px 4px; flex-shrink: 0; }
+
+#pairs-scroll { flex: 1; overflow-y: auto; padding: 6px 10px 0; }
+
+/* GROUP */
+.group-block {
+  border: 1px solid #e4e4e0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #fafaf8;
+  overflow: hidden;
+  transition: border-color 0.1s;
+}
+.group-block.drag-over { border-color: #a0a8d0; background: #f0f2ff; }
+
+.group-header {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 7px 5px 5px;
+  background: #f2f2ef;
+  border-bottom: 1px solid #e4e4e0;
+  user-select: none;
+}
+.group-header.collapsed { border-bottom: none; }
+
+.group-drag-handle {
+  cursor: grab; color: #ccc; font-size: 13px;
+  width: 14px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; letter-spacing: -2px;
+}
+.group-drag-handle:active { cursor: grabbing; }
+.group-drag-handle:hover { color: #999; }
+
+.group-collapse-btn {
+  background: none; border: none; cursor: pointer;
+  color: #aaa; font-size: 10px; width: 14px; height: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: transform 0.15s;
+}
+.group-collapse-btn.collapsed { transform: rotate(-90deg); }
+
+.group-name-input {
+  flex: 1; font-family: inherit; font-size: 12px; font-weight: 600;
+  color: #555; background: transparent; border: none; outline: none;
+  padding: 0; min-width: 0;
+}
+.group-name-input::placeholder { color: #bbb; font-weight: 400; }
+
+.group-pair-count { font-size: 11px; color: #aaa; flex-shrink: 0; }
+
+.group-add-btn {
+  font-family: inherit; font-size: 11px; padding: 2px 7px;
+  background: #eef2ff; border: 1px solid #c8cce8; border-radius: 5px;
+  cursor: pointer; color: #4f5fa8; white-space: nowrap; flex-shrink: 0;
+}
+.group-add-btn:hover { background: #dde4ff; }
+
+.group-del-btn {
+  background: none; border: none; cursor: pointer; color: #ddd;
+  font-size: 15px; width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; flex-shrink: 0;
+}
+.group-del-btn:hover { background: #fef2f2; color: #e55; }
+
+.group-body { padding: 5px 6px; display: flex; flex-direction: column; }
+.group-body.collapsed { display: none; }
+
+/* PAIR */
+.pair-block {
+  border-radius: 6px;
+  margin-bottom: 4px;
+  background: #fff;
+  border: 1px solid #e8e8e4;
+  overflow: hidden;
+  transition: border-color 0.1s;
+}
+.pair-block.drag-over-pair { border-color: #a0a8d0; background: #f6f8ff; }
+.pair-block.dragging { opacity: 0.4; }
+
+.pair-main-row {
+  display: grid;
+  grid-template-columns: 13px 1fr 1fr 24px 24px;
+  gap: 4px;
+  align-items: center;
+  padding: 4px 5px;
+}
+
+.pair-drag-handle {
+  cursor: grab; color: #ddd; font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  letter-spacing: -2px;
+}
+.pair-drag-handle:active { cursor: grabbing; }
+.pair-drag-handle:hover { color: #aaa; }
+
+.pair-input {
+  font-family: inherit; font-size: 12px; padding: 4px 6px;
+  border: 1px solid #e0e0dc; border-radius: 5px; outline: none;
+  background: #fafaf8; color: #1a1a1a; width: 100%; min-width: 0;
+}
+.pair-input:focus { border-color: #a0a8d0; background: #fff; }
+.pair-input.filled { background: #fff; border-color: #c8cce8; }
+
+.pair-alias-btn {
+  width: 24px; height: 24px; border: 1px solid #e0e0dc;
+  background: #f8f8f6; border-radius: 5px; cursor: pointer;
+  color: #bbb; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.1s;
+}
+.pair-alias-btn:hover { background: #eef2ff; color: #4f5fa8; border-color: #c8cce8; }
+.pair-alias-btn.has-aliases { background: #eef2ff; color: #4f5fa8; border-color: #c8cce8; }
+
+.pair-del-btn {
+  width: 24px; height: 24px; border: none;
+  background: none; border-radius: 5px; cursor: pointer;
+  color: #ccc; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.pair-del-btn:hover { background: #fef2f2; color: #e55; }
+
+/* ALIASES */
+.aliases-area {
+  padding: 0 6px 6px 22px;
+  display: flex; flex-direction: column; gap: 3px;
+  border-top: 1px solid #f0f0ee;
+  background: #fdfcfc;
+}
+.aliases-area.hidden { display: none; }
+
+.alias-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; color: #c0c0bc; padding: 4px 0 2px;
+}
+
+.alias-row { display: flex; align-items: center; gap: 4px; }
+.alias-input {
+  flex: 1; font-family: inherit; font-size: 12px; padding: 3px 6px;
+  border: 1px solid #e0e0dc; border-radius: 5px; outline: none;
+  background: #fafaf8; color: #1a1a1a; min-width: 0;
+}
+.alias-input:focus { border-color: #a0a8d0; background: #fff; }
+.alias-input.filled { background: #fff; border-color: #c8cce8; }
+.alias-del {
+  width: 18px; height: 18px; border: none; background: none;
+  cursor: pointer; color: #ddd; font-size: 14px;
+  display: flex; align-items: center; justify-content: center; border-radius: 4px; flex-shrink: 0;
+}
+.alias-del:hover { background: #fef2f2; color: #e55; }
+.alias-add-btn {
+  font-family: inherit; font-size: 11px; padding: 3px 8px;
+  background: #f4f4f2; border: 1px solid #e0e0dc; border-radius: 5px;
+  cursor: pointer; color: #666; align-self: flex-start; margin-top: 1px;
+}
+.alias-add-btn:hover { background: #e8e8e4; }
+
+/* UNGROUPED PAIRS (no group wrapper) */
+.ungrouped-pair { margin-bottom: 4px; }
+
+/* BOTTOM BAR */
+.bottom-bar {
+  padding: 8px 14px 12px; border-top: 1px solid #f0f0ee;
+  flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;
+}
+.bottom-btn-row { display: flex; gap: 5px; }
+.btn-add {
+  flex: 1; padding: 7px 10px; font-family: inherit; font-size: 12px;
+  font-weight: 500; background: #f0f0ee; border: 1px solid #e0e0dc;
+  border-radius: 7px; cursor: pointer; color: #444;
+}
+.btn-add:hover { background: #e8e8e4; }
+.btn-add-group {
+  flex: 1; padding: 7px 10px; font-family: inherit; font-size: 12px;
+  font-weight: 500; background: #eef2ff; border: 1px solid #c8cce8;
+  border-radius: 7px; cursor: pointer; color: #4f5fa8;
+}
+.btn-add-group:hover { background: #dde4ff; }
+.btn-clear {
+  width: 100%; padding: 6px 12px; font-family: inherit; font-size: 12px;
+  background: none; border: 1px solid #e8e8e4;
+  border-radius: 7px; cursor: pointer; color: #aaa;
+}
+.btn-clear:hover { background: #fef2f2; color: #e55; border-color: #f9c3c3; }
+#match-info { font-size: 11px; color: #aaa; text-align: center; }
+#match-info .c { color: #5a6abf; font-weight: 600; }
+
+/* MODALS */
+.modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 10px; border: 1px solid #ddd;
+  width: 420px; max-width: 92vw; padding: 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.modal-title { font-size: 14px; font-weight: 600; }
+.modal-desc { font-size: 12px; color: #888; line-height: 1.5; }
+.modal textarea {
+  font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
+  padding: 10px; border: 1px solid #e0e0dc; border-radius: 6px;
+  resize: vertical; height: 160px; outline: none;
+  color: #1a1a1a; background: #fafaf8; width: 100%;
+}
+.modal textarea:focus { border-color: #a0a8d0; background: #fff; }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-cancel { font-family: inherit; font-size: 13px; padding: 6px 14px; background: #f4f4f2; border: 1px solid #e0e0dc; border-radius: 6px; cursor: pointer; color: #666; }
+.btn-cancel:hover { background: #ebebea; }
+.btn-ok { font-family: inherit; font-size: 13px; font-weight: 500; padding: 6px 14px; background: #eef2ff; border: 1px solid #c8cce8; border-radius: 6px; cursor: pointer; color: #4f5fa8; }
+.btn-ok:hover { background: #dde4ff; }
+
+/* TOAST */
+#toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #1a1a1a; color: #fff; font-size: 13px;
+  padding: 8px 18px; border-radius: 20px; opacity: 0;
+  pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+  z-index: 9999; white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Word Replacer</h1>
+  <span class="badge">Live</span>
+</header>
+
+<div class="main">
+  <div class="center-panel">
+    <div class="pane">
+      <div class="pane-label">
+        Output
+        <span class="pill" id="rep-count">0 replacements</span>
+        <button id="btn-copy-output" title="Copy all output text" style="margin-left:auto;font-family:inherit;font-size:11px;font-weight:500;padding:2px 9px;background:#f4f4f2;border:1px solid #e0e0dc;border-radius: 5px;cursor:pointer;color:#666;display:flex;align-items:center;gap:4px;transition:background 0.1s,color 0.1s;">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M1 10V2a1 1 0 0 1 1-1h8"/></svg>
+          Copy
+        </button>
+      </div>
+      <div id="output" class="empty-hint" title="Click to copy output"></div>
+    </div>
+    <div class="pane">
+      <div class="pane-label">Input</div>
+      <textarea id="input-area" placeholder="Paste or type your text here..."></textarea>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="presets-wrap">
+      <div class="section-title">Presets</div>
+      <div class="row">
+        <input type="text" id="preset-name" placeholder="Preset name..." maxlength="40">
+        <button class="btn-blue" id="btn-save-preset">Save</button>
+      </div>
+      <div id="presets-list"></div>
+      <div class="ie-row">
+        <button class="btn-ghost" id="btn-export">&#x2398; Export</button>
+        <button class="btn-ghost" id="btn-import">&#x2B06; Import</button>
+      </div>
+    </div>
+
+    <div class="pairs-wrap">
+      <div class="pairs-header">
+        <div class="section-title">Replace pairs</div>
+      </div>
+      <div id="pairs-scroll"></div>
+      <div class="bottom-bar">
+        <div class="bottom-btn-row">
+          <button class="btn-add" id="btn-add">+ Add pair</button>
+          <button class="btn-add-group" id="btn-add-group">&#x229E; Add group</button>
+        </div>
+        <button class="btn-clear" id="btn-clear">Clear all</button>
+        <div id="match-info"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-bg" id="export-modal">
+  <div class="modal">
+    <div class="modal-title">Export presets</div>
+    <div class="modal-desc">Copy this text and save it anywhere. Paste it back with Import to restore.</div>
+    <textarea id="export-ta" readonly></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="export-close">Close</button>
+      <button class="btn-ok" id="export-copy">Copy to clipboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-bg" id="import-modal">
+  <div class="modal">
+    <div class="modal-title">Import presets</div>
+    <div class="modal-desc">Paste exported preset text, then Merge (keep existing) or Replace all.</div>
+    <textarea id="import-ta" placeholder="Paste exported preset text here..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="import-close">Cancel</button>
+      <button class="btn-ghost" style="font-size:13px;padding:6px 14px;" id="import-merge">Merge</button>
+      <button class="btn-ok" id="import-replace">Replace all</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ================================================================
+// DATA MODEL
+// state.groups = [
+//   { id, name, collapsed, pairs: [{ id, old, new, aliases:[], aliasOpen }] }
+// ]
+// Special group id UNGROUPED holds loose pairs shown without a box.
+// ================================================================
+
+const UNGROUPED = '__ungrouped__';
+let uidN = Date.now();
+function uid() { return 'u' + (uidN++); }
+
+function makeGroup(id, name) {
+  return { id: id || uid(), name: name !== undefined ? name : 'Group', collapsed: false, pairs: [] };
+}
+function makePair() {
+  return { id: uid(), old: '', new: '', aliases: [], aliasOpen: false };
+}
+
+let state = { groups: [makeGroup(UNGROUPED, '')] };
+const STORAGE_KEY = 'wr_presets_v2';
+let presets = (function() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+})();
+
+// Migrate v1 presets
+(function migrateV1() {
+  try {
+    const raw = localStorage.getItem('wr_presets_v1');
+    if (!raw) return;
+    const v1 = JSON.parse(raw);
+    Object.entries(v1).forEach(([name, pairs]) => {
+      if (!presets[name] && Array.isArray(pairs)) {
+        presets[name] = { groups: [{ id: UNGROUPED, name: '', collapsed: false,
+          pairs: pairs.map(p => ({ id: uid(), old: p.old||'', new: p.new||'', aliases: [] })) }] };
+      }
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
+    localStorage.removeItem('wr_presets_v1');
+  } catch {}
+})();
+
+function savePresetsToStorage() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(presets)); } catch {}
+}
+
+function serialiseState(s) {
+  return { groups: s.groups.map(g => ({
+    id: g.id, name: g.name, collapsed: g.collapsed,
+    pairs: g.pairs.map(p => ({ id: p.id, old: p.old, new: p.new, aliases: [...(p.aliases||[])] }))
+  })) };
+}
+function deserialiseState(raw) {
+  if (!raw || !Array.isArray(raw.groups)) return null;
+  return { groups: raw.groups.map(g => ({
+    id: g.id || uid(), name: g.name || '', collapsed: !!g.collapsed,
+    pairs: (g.pairs||[]).map(p => ({
+      id: p.id || uid(), old: p.old||'', new: p.new||'',
+      aliases: Array.isArray(p.aliases) ? p.aliases : [], aliasOpen: false
+    }))
+  })) };
+}
+
+// DOM
+const inputArea    = document.getElementById('input-area');
+const outputEl     = document.getElementById('output');
+const repCount     = document.getElementById('rep-count');
+const matchInfo    = document.getElementById('match-info');
+const pairsScroll  = document.getElementById('pairs-scroll');
+const presetsList  = document.getElementById('presets-list');
+const presetNameEl = document.getElementById('preset-name');
+const toastEl      = document.getElementById('toast');
+
+// Toast
+let _tt;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => toastEl.classList.remove('show'), 2300);
+}
+
+// Helpers
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function findGroup(gid) { return state.groups.find(g => g.id === gid); }
+
+// ── Replace ───────────────────────────────────────────────
+function runReplace() {
+  const text = inputArea.value;
+  const activePairs = [];
+  state.groups.forEach(g => g.pairs.forEach(p => { if (p.old.trim()) activePairs.push(p); }));
+
+  if (!text || activePairs.length === 0) {
+    outputEl.textContent = text || '';
+    outputEl.classList.toggle('empty-hint', !text);
+    repCount.textContent = '0 replacements';
+    matchInfo.innerHTML = '';
+    return;
+  }
+
+  let result = text, total = 0;
+  const details = [];
+  activePairs.forEach(p => {
+    const terms = [p.old, ...(p.aliases||[])].filter(t => t.trim());
+    let cnt = 0;
+    terms.forEach(term => {
+      result = result.replace(new RegExp(escapeRegex(term), 'g'), () => { cnt++; return p.new; });
+    });
+    if (cnt > 0) {
+      const lbl = terms.length > 1 ? escapeHtml(p.old)+'+' + (terms.length-1) : escapeHtml(p.old);
+      details.push('<span class="c">' + cnt + '</span> &ldquo;' + lbl + '&rdquo;');
+    }
+    total += cnt;
+  });
+
+  outputEl.textContent = result;
+  outputEl.classList.remove('empty-hint');
+  repCount.textContent = total === 1 ? '1 replacement' : total + ' replacements';
+  matchInfo.innerHTML = details.length ? details.join(', ') + ' replaced'
+    : '<span style="color:#bbb">No matches found</span>';
+}
+
+// ================================================================
+// RENDER
+// ================================================================
+function render() {
+  pairsScroll.innerHTML = '';
+  state.groups.forEach(g => {
+    if (g.id === UNGROUPED) {
+      g.pairs.forEach(p => {
+        const el = buildPairEl(UNGROUPED, p);
+        el.classList.add('ungrouped-pair');
+        pairsScroll.appendChild(el);
+      });
+    } else {
+      pairsScroll.appendChild(buildGroupEl(g));
+    }
+  });
+  renderPresets();
+}
+
+// ── Group element ─────────────────────────────────────────
+function buildGroupEl(g) {
+  const block = document.createElement('div');
+  block.className = 'group-block';
+  block.dataset.gid = g.id;
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'group-header' + (g.collapsed ? ' collapsed' : '');
+
+  const dh = document.createElement('div');
+  dh.className = 'group-drag-handle';
+  dh.textContent = '\u22EE\u22EE';
+  dh.title = 'Drag to reorder group';
+
+  const cb = document.createElement('button');
+  cb.className = 'group-collapse-btn' + (g.collapsed ? ' collapsed' : '');
+  cb.textContent = '\u25BE';
+  cb.title = g.collapsed ? 'Expand' : 'Collapse';
+  cb.addEventListener('click', () => { g.collapsed = !g.collapsed; render(); runReplace(); });
+
+  const ni = document.createElement('input');
+  ni.className = 'group-name-input';
+  ni.type = 'text';
+  ni.value = g.name;
+  ni.placeholder = 'Group name\u2026';
+  ni.addEventListener('input', () => { g.name = ni.value; renderPresets(); });
+  ni.addEventListener('mousedown', e => e.stopPropagation());
+
+  const ce = document.createElement('span');
+  ce.className = 'group-pair-count';
+  ce.textContent = g.pairs.length + ' pair' + (g.pairs.length !== 1 ? 's' : '');
+
+  const ab = document.createElement('button');
+  ab.className = 'group-add-btn';
+  ab.textContent = '+ Pair';
+  ab.addEventListener('click', () => { g.pairs.push(makePair()); g.collapsed = false; render(); runReplace(); });
+
+  const db = document.createElement('button');
+  db.className = 'group-del-btn';
+  db.textContent = '\xD7';
+  db.title = 'Delete group';
+  db.addEventListener('click', () => {
+    if (g.pairs.length > 0 && !confirm('Delete group "' + (g.name||'Unnamed') + '" and its ' + g.pairs.length + ' pair(s)?')) return;
+    state.groups = state.groups.filter(x => x.id !== g.id);
+    render(); runReplace();
+  });
+
+  hdr.append(dh, cb, ni, ce, ab, db);
+  block.appendChild(hdr);
+
+  // Body
+  const body = document.createElement('div');
+  body.className = 'group-body' + (g.collapsed ? ' collapsed' : '');
+  body.dataset.gid = g.id;
+
+  if (g.pairs.length === 0 && !g.collapsed) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'font-size:11px;color:#ccc;font-style:italic;padding:8px 4px;text-align:center;';
+    empty.textContent = 'No pairs \u2014 click + Pair above';
+    body.appendChild(empty);
+  } else {
+    g.pairs.forEach(p => body.appendChild(buildPairEl(g.id, p)));
+  }
+
+  block.appendChild(body);
+  setupGroupDrag(block, g);
+  return block;
+}
+
+// ── Pair element ──────────────────────────────────────────
+function buildPairEl(gid, p) {
+  const block = document.createElement('div');
+  block.className = 'pair-block';
+  block.dataset.pid = p.id;
+  block.dataset.gid = gid;
+
+  const row = document.createElement('div');
+  row.className = 'pair-main-row';
+
+  const dh = document.createElement('div');
+  dh.className = 'pair-drag-handle';
+  dh.textContent = '\u22EE';
+  dh.title = 'Drag to reorder';
+
+  const oi = document.createElement('input');
+  oi.className = 'pair-input' + (p.old ? ' filled' : '');
+  oi.type = 'text'; oi.placeholder = 'old\u2026'; oi.value = p.old;
+  oi.addEventListener('input', () => { p.old = oi.value; oi.classList.toggle('filled', !!oi.value); runReplace(); });
+
+  const ni = document.createElement('input');
+  ni.className = 'pair-input' + (p.new ? ' filled' : '');
+  ni.type = 'text'; ni.placeholder = 'new\u2026'; ni.value = p.new;
+  ni.addEventListener('input', () => { p.new = ni.value; ni.classList.toggle('filled', !!ni.value); runReplace(); });
+
+  const aliasCount = (p.aliases||[]).length;
+  const ab = document.createElement('button');
+  ab.className = 'pair-alias-btn' + (aliasCount ? ' has-aliases' : '');
+  ab.title = aliasCount ? aliasCount + ' alias(es) \u2014 click to edit' : 'Add alias old-words';
+  ab.textContent = aliasCount ? '+' + aliasCount : '+';
+  ab.addEventListener('click', () => {
+    p.aliasOpen = !p.aliasOpen;
+    const existing = block.querySelector('.aliases-area');
+    if (existing) existing.remove();
+    if (p.aliasOpen) block.appendChild(buildAliasArea(p, ab));
+  });
+
+  const db = document.createElement('button');
+  db.className = 'pair-del-btn';
+  db.textContent = '\xD7';
+  db.title = 'Remove pair';
+  db.addEventListener('click', () => {
+    const g = findGroup(gid);
+    if (g) { g.pairs = g.pairs.filter(x => x.id !== p.id); render(); runReplace(); }
+  });
+
+  row.append(dh, oi, ni, ab, db);
+  block.appendChild(row);
+
+  if (p.aliasOpen) block.appendChild(buildAliasArea(p, null));
+  setupPairDrag(block, gid, p.id);
+  return block;
+}
+
+// ── Alias area ────────────────────────────────────────────
+function buildAliasArea(p, aliasBtn) {
+  const area = document.createElement('div');
+  area.className = 'aliases-area';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'alias-label';
+  lbl.textContent = 'Also replace these \u2192 same new word';
+  area.appendChild(lbl);
+
+  function refreshAliases() {
+    Array.from(area.querySelectorAll('.alias-row, .alias-add-btn')).forEach(e => e.remove());
+    (p.aliases||[]).forEach((alias, i) => {
+      const row = document.createElement('div');
+      row.className = 'alias-row';
+
+      const inp = document.createElement('input');
+      inp.className = 'alias-input' + (alias ? ' filled' : '');
+      inp.type = 'text'; inp.placeholder = 'alias ' + (i+1) + '\u2026'; inp.value = alias;
+      inp.addEventListener('input', () => {
+        p.aliases[i] = inp.value;
+        inp.classList.toggle('filled', !!inp.value);
+        updateAliasBtn(); runReplace();
+      });
+
+      const del = document.createElement('button');
+      del.className = 'alias-del'; del.textContent = '\xD7';
+      del.addEventListener('click', () => { p.aliases.splice(i, 1); refreshAliases(); updateAliasBtn(); runReplace(); });
+
+      row.append(inp, del);
+      area.appendChild(row);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'alias-add-btn'; addBtn.textContent = '+ Add alias';
+    addBtn.addEventListener('click', () => {
+      if (!p.aliases) p.aliases = [];
+      p.aliases.push('');
+      refreshAliases();
+      const inputs = area.querySelectorAll('.alias-input');
+      if (inputs.length) inputs[inputs.length-1].focus();
+    });
+    area.appendChild(addBtn);
+  }
+
+  function updateAliasBtn() {
+    const btn = aliasBtn || area.closest('.pair-block') && area.closest('.pair-block').querySelector('.pair-alias-btn');
+    if (!btn) return;
+    const cnt = (p.aliases||[]).length;
+    btn.classList.toggle('has-aliases', cnt > 0);
+    btn.textContent = cnt ? '+' + cnt : '+';
+    btn.title = cnt ? cnt + ' alias(es) \u2014 click to edit' : 'Add alias old-words';
+  }
+
+  refreshAliases();
+  return area;
+}
+
+// ================================================================
+// DRAG & DROP
+// ================================================================
+
+// ── Group drag ────────────────────────────────────────────
+function setupGroupDrag(el, g) {
+  const handle = el.querySelector('.group-drag-handle');
+  handle.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const allGroupEls = () => Array.from(pairsScroll.querySelectorAll('.group-block'));
+    el.classList.add('dragging');
+
+    let overEl = null;
+
+    function onMove(e) {
+      const t = document.elementFromPoint(e.clientX, e.clientY);
+      const og = t && t.closest('.group-block');
+      pairsScroll.querySelectorAll('.group-block').forEach(b => b.classList.remove('drag-over'));
+      if (og && og !== el) { og.classList.add('drag-over'); overEl = og; }
+      else overEl = null;
+    }
+    function onUp(e) {
+      el.classList.remove('dragging');
+      pairsScroll.querySelectorAll('.group-block').forEach(b => b.classList.remove('drag-over'));
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+
+      if (overEl) {
+        const fromIdx = state.groups.findIndex(x => x.id === g.id);
+        const toIdx   = state.groups.findIndex(x => x.id === overEl.dataset.gid);
+        if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+          const [removed] = state.groups.splice(fromIdx, 1);
+          state.groups.splice(toIdx, 0, removed);
+          render(); runReplace();
+        }
+      }
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+// ── Pair drag ─────────────────────────────────────────────
+function setupPairDrag(el, gid, pid) {
+  const handle = el.querySelector('.pair-drag-handle');
+  handle.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    el.classList.add('dragging');
+
+    let overPairEl = null, overBodyEl = null;
+
+    function onMove(e) {
+      const t = document.elementFromPoint(e.clientX, e.clientY);
+      const op = t && t.closest('.pair-block');
+      const ob = t && t.closest('.group-body');
+
+      pairsScroll.querySelectorAll('.pair-block').forEach(b => b.classList.remove('drag-over-pair'));
+      pairsScroll.querySelectorAll('.group-block').forEach(b => b.classList.remove('drag-over'));
+
+      overPairEl = null; overBodyEl = null;
+      if (op && op !== el) { op.classList.add('drag-over-pair'); overPairEl = op; }
+      else if (ob) {
+        const gb = ob.closest('.group-block');
+        if (gb) { gb.classList.add('drag-over'); overBodyEl = ob; }
+      }
+    }
+
+    function onUp() {
+      el.classList.remove('dragging');
+      pairsScroll.querySelectorAll('.pair-block').forEach(b => b.classList.remove('drag-over-pair'));
+      pairsScroll.querySelectorAll('.group-block').forEach(b => b.classList.remove('drag-over'));
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+
+      const srcGroup = findGroup(gid);
+      if (!srcGroup) return;
+      const srcIdx = srcGroup.pairs.findIndex(p => p.id === pid);
+      if (srcIdx === -1) return;
+
+      if (overPairEl) {
+        const tgtPid = overPairEl.dataset.pid;
+        const tgtGid = overPairEl.dataset.gid;
+        const tgtGroup = findGroup(tgtGid);
+        if (!tgtGroup) return;
+
+        const [removed] = srcGroup.pairs.splice(srcIdx, 1);
+
+        if (tgtGid === gid) {
+          // Same group — reorder
+          const newIdx = srcGroup.pairs.findIndex(p => p.id === tgtPid);
+          srcGroup.pairs.splice(newIdx >= 0 ? newIdx : srcGroup.pairs.length, 0, removed);
+        } else {
+          const tgtIdx = tgtGroup.pairs.findIndex(p => p.id === tgtPid);
+          tgtGroup.pairs.splice(tgtIdx >= 0 ? tgtIdx : tgtGroup.pairs.length, 0, removed);
+        }
+        render(); runReplace();
+
+      } else if (overBodyEl) {
+        const tgtGid = overBodyEl.dataset.gid;
+        if (tgtGid && tgtGid !== gid) {
+          const tgtGroup = findGroup(tgtGid);
+          if (tgtGroup) {
+            const [removed] = srcGroup.pairs.splice(srcIdx, 1);
+            tgtGroup.pairs.push(removed);
+            render(); runReplace();
+          }
+        }
+      }
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+// ================================================================
+// PRESETS
+// ================================================================
+function renderPresets() {
+  presetsList.innerHTML = '';
+  const names = Object.keys(presets);
+  if (!names.length) {
+    const h = document.createElement('div'); h.className = 'hint-text'; h.textContent = 'No presets saved yet.';
+    presetsList.appendChild(h); return;
+  }
+  names.forEach(name => {
+    const item = document.createElement('div'); item.className = 'preset-item';
+    const ne = document.createElement('span'); ne.className = 'preset-name'; ne.textContent = name; ne.title = 'Load preset';
+    ne.addEventListener('click', () => loadPreset(name));
+    const ce = document.createElement('span'); ce.className = 'preset-count';
+    const data = presets[name]; let n = 0;
+    if (data && Array.isArray(data.groups)) data.groups.forEach(g => { n += (g.pairs||[]).filter(p=>p.old).length; });
+    else if (Array.isArray(data)) n = data.filter(p=>p.old).length;
+    ce.textContent = n + ' pair' + (n !== 1 ? 's' : '');
+    const db = document.createElement('button'); db.className = 'icon-btn'; db.textContent = '\xD7'; db.title = 'Delete preset';
+    db.addEventListener('click', () => { delete presets[name]; savePresetsToStorage(); renderPresets(); showToast('Deleted "' + name + '"'); });
+    item.append(ne, ce, db); presetsList.appendChild(item);
+  });
+}
+
+function loadPreset(name) {
+  const data = presets[name]; if (!data) return;
+  if (data.groups) {
+    const parsed = deserialiseState(data);
+    if (parsed) { state = parsed; render(); runReplace(); showToast('Loaded "' + name + '"'); return; }
+  }
+  if (Array.isArray(data)) {
+    state = { groups: [{ id: UNGROUPED, name: '', collapsed: false,
+      pairs: data.map(p => ({ id: uid(), old: p.old||'', new: p.new||'', aliases: p.aliases||[], aliasOpen: false })) }] };
+    render(); runReplace(); showToast('Loaded "' + name + '"');
+  }
+}
+
+function savePreset() {
+  const name = presetNameEl.value.trim();
+  if (!name) { showToast('Enter a preset name first'); return; }
+  presets[name] = serialiseState(state);
+  savePresetsToStorage(); renderPresets(); presetNameEl.value = '';
+  showToast('Saved "' + name + '"');
+}
+
+// ================================================================
+// EXPORT / IMPORT
+// ================================================================
+const exportModal = document.getElementById('export-modal');
+const importModal = document.getElementById('import-modal');
+const exportTa    = document.getElementById('export-ta');
+const importTa    = document.getElementById('import-ta');
+
+document.getElementById('btn-export').addEventListener('click', () => {
+  exportTa.value = JSON.stringify(presets, null, 2); exportModal.classList.add('open');
+});
+document.getElementById('export-close').addEventListener('click', () => exportModal.classList.remove('open'));
+document.getElementById('export-copy').addEventListener('click', () => {
+  navigator.clipboard.writeText(exportTa.value)
+    .then(() => { showToast('Copied!'); exportModal.classList.remove('open'); })
+    .catch(() => { exportTa.select(); document.execCommand('copy'); showToast('Copied!'); exportModal.classList.remove('open'); });
+});
+document.getElementById('btn-import').addEventListener('click', () => {
+  importTa.value = ''; importModal.classList.add('open'); setTimeout(() => importTa.focus(), 50);
+});
+document.getElementById('import-close').addEventListener('click', () => importModal.classList.remove('open'));
+
+function parseImport() {
+  try { const d = JSON.parse(importTa.value.trim()); if (typeof d !== 'object' || Array.isArray(d)) throw 0; return d; }
+  catch { showToast('Invalid preset data'); return null; }
+}
+document.getElementById('import-replace').addEventListener('click', () => {
+  const d = parseImport(); if (!d) return;
+  presets = d; savePresetsToStorage(); renderPresets(); importModal.classList.remove('open'); showToast('Presets replaced!');
+});
+document.getElementById('import-merge').addEventListener('click', () => {
+  const d = parseImport(); if (!d) return;
+  presets = Object.assign({}, presets, d); savePresetsToStorage(); renderPresets(); importModal.classList.remove('open'); showToast('Presets merged!');
+});
+[exportModal, importModal].forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+// ================================================================
+// BUTTONS
+// ================================================================
+document.getElementById('btn-add').addEventListener('click', () => {
+  const ug = findGroup(UNGROUPED);
+  if (ug) ug.pairs.push(makePair());
+  render(); runReplace();
+  const blocks = pairsScroll.querySelectorAll('.ungrouped-pair .pair-input');
+  if (blocks.length) blocks[blocks.length - 2].focus();
+});
+
+document.getElementById('btn-add-group').addEventListener('click', () => {
+  const g = makeGroup(null, 'New Group');
+  g.pairs.push(makePair());
+  state.groups.push(g);
+  render(); runReplace();
+  // Focus the new group's name input
+  const groupEls = pairsScroll.querySelectorAll('.group-block');
+  if (groupEls.length) groupEls[groupEls.length-1].querySelector('.group-name-input').focus();
+});
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+  if (!confirm('Clear all pairs and groups?')) return;
+  state = { groups: [makeGroup(UNGROUPED, '')] };
+  render(); runReplace();
+});
+
+document.getElementById('btn-save-preset').addEventListener('click', savePreset);
+presetNameEl.addEventListener('keydown', e => { if (e.key === 'Enter') savePreset(); });
+inputArea.addEventListener('input', runReplace);
+
+function copyOutput() {
+  if (!outputEl.textContent) { showToast('Nothing to copy'); return; }
+  navigator.clipboard.writeText(outputEl.textContent).then(() => {
+    showToast('Output copied!');
+    const btn = document.getElementById('btn-copy-output');
+    btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 7 5.5 11 12 3"/></svg> Copied!';
+    btn.style.background = '#eef2ff'; btn.style.color = '#4f5fa8'; btn.style.borderColor = '#c8cce8';
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M1 10V2a1 1 0 0 1 1-1h8"/></svg> Copy';
+      btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = '';
+    }, 1800);
+  }).catch(() => {});
+}
+
+outputEl.addEventListener('click', copyOutput);
+document.getElementById('btn-copy-output').addEventListener('click', e => { e.stopPropagation(); copyOutput(); });
+
+// ── Init ──────────────────────────────────────────────────
+findGroup(UNGROUPED).pairs.push(makePair());
+render();
+</script>
+</body>
+</html>
