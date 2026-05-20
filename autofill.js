@@ -212,7 +212,10 @@
     /* Split on sentence-ending punctuation followed by whitespace / end */
     return text
       .replace(/\r\n/g, '\n')
-      .split(/(?<=[.!?])\s+/)
+      .split(/([.!?])\s+/).reduce(function(acc, part, i, arr) {
+        if (i % 2 === 0) { acc.push(part); } else { acc[acc.length - 1] += part; }
+        return acc;
+      }, [])
       .map(function(s) { return s.trim(); })
       .filter(function(s) { return s.length > 15; }); /* skip tiny fragments */
   }
