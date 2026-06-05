@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Not Bad 2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Salesforce+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ── Preview panel tabs ── */
+.tl-preview-tab {
+  flex: 1;
+  padding: 9px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sf-gray-6);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tl-preview-tab:hover { color: var(--sf-brand); }
+.tl-preview-tab.active { color: var(--sf-brand); border-bottom-color: var(--sf-brand); }
+
+/* ── Batch size pills ── */
+.tl-batch-pill {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--sf-gray-3);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--sf-gray-7);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tl-batch-pill:hover { border-color: var(--sf-brand); color: var(--sf-brand); }
+.tl-batch-pill.active { background: var(--sf-brand); color: #fff; border-color: var(--sf-brand); }
+
+/* ── Batch copy buttons ── */
+.tl-batch-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f8f9fa;
+  border: 1px solid var(--sf-gray-3);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  gap: 10px;
+}
+.tl-batch-btn:hover { border-color: var(--sf-brand); background: #eef4ff; }
+.tl-batch-btn.copied { border-color: #27ae60; background: #eafaf1; color: #27ae60; }
+.tl-batch-btn-label { font-weight: 700; color: var(--sf-gray-8); }
+.tl-batch-btn-range { font-size: 11px; color: var(--sf-gray-5); }
+.tl-batch-btn-action { font-size: 11px; font-weight: 600; color: var(--sf-brand); white-space: nowrap; }
+.tl-batch-btn.copied .tl-batch-btn-action { color: #27ae60; }
+
+/* ── Smart Link controls ── */
+.coco-sl-controls {
+  padding: 10px 12px 6px;
+  background: var(--sf-gray-1);
+  border-bottom: 1px solid var(--sf-gray-3);
+}
+.coco-sl-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--sf-gray-6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+}
+.coco-sl-mode-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.coco-sl-mode-btn {
+  flex: 1;
+  padding: 5px 0;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1.5px solid var(--sf-gray-3);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--sf-gray-6);
+  cursor: pointer;
+  transition: all 0.14s;
+  font-family: var(--font);
+}
+.coco-sl-mode-btn.active {
+  border-color: var(--sf-brand);
+  background: var(--sf-brand);
+  color: #fff;
+}
+.coco-sl-word-opt {
+  margin-bottom: 4px;
+}
+.coco-sl-num-input {
+  width: 64px;
+  padding: 4px 8px;
+  border: 1.5px solid var(--sf-gray-3);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: var(--font);
+  margin-top: 4px;
+}
+.coco-sl-num-input:focus {
+  outline: none;
+  border-color: var(--sf-brand);
+}
+
+/* ── Multi-box paste modal ── */
+.tl-modal-wide { width: min(92vw, 900px) !important; max-width: 900px !important; }
+.tl-paste-ta-narrow { height: 260px !important; min-width: 220px; width: 240px; resize: none; }
+.tl-paste-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.tl-paste-box-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.tl-paste-box-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sf-gray-7);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.tl-paste-box-count {
+  font-size: 11px;
+  color: var(--sf-gray-5);
+  font-style: italic;
+}
+.tl-paste-box-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--sf-gray-4);
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.tl-paste-box-remove:hover { color: #e74c3c; }
+
+/* ── Detail modal: editable tag rows ── */
+.sd-tag-edit-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: #f8f9ff;
+  border: 1px solid #c5d6f8;
+  border-radius: 7px;
+  padding: 8px 10px;
+  margin-bottom: 7px;
+  position: relative;
+}
+.sd-tag-edit-row::before {
+  content: '#' attr(data-idx);
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--sf-gray-4);
+  letter-spacing: 0.03em;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="sf-nav">
+  <div class="sf-nav-logo">
+    <div class="sf-nav-logo-icon">NB</div>
+    Not Bad 2.0
+  </div>
+  <div class="sf-nav-divider"></div>
+  <button class="sf-nav-item active">📋 Text Tool</button>
+  <button class="sf-nav-item" id="btnPresets">📂 Presets</button>
+  <button class="sf-nav-item" id="btnSaveLoad">💾 Save / Load</button>
+  <div class="sf-nav-spacer"></div>
+  <button class="sf-nav-item" id="btnClearAll" title="Clear all text">🗑️ Clear</button>
+  <div class="sf-nav-avatar" title="Not Bad User">NB</div>
+</nav>
+
+<!-- SUB NAV -->
+<div class="sf-subnav">
+  <div class="sf-tab active" id="tabEditor" style="cursor:pointer;">✏️ Editor</div>
+  <div class="sf-tab" id="tabTemplates" style="cursor:pointer;">📁 Case Library</div>
+  <div class="sf-tab" id="tabSmartBot" style="cursor:pointer;">🤖 SmartBot</div>
+  <div class="sf-tab" style="margin-left:auto; font-size:11px; color:var(--sf-gray-5); font-weight:400; padding-bottom:12px;">
+    Word Replacer Panel →
+  </div>
+</div>
+
+<!-- PASTE MODAL -->
+<div class="tl-modal-overlay" id="tlModalOverlay">
+  <div class="tl-modal tl-modal-wide">
+    <div class="tl-modal-hdr">
+      <span style="font-size:18px;">📋</span>
+      <span class="tl-modal-title">Paste Cases from Word / Excel</span>
+      <button class="tl-modal-close" id="tlModalClose">✕</button>
+    </div>
+    <div class="tl-modal-body" style="display:flex; flex-direction:column; gap:0; padding:0;">
+
+      <!-- Hint bar -->
+      <div class="tl-modal-hint" style="margin:12px 14px 8px; flex-shrink:0;">
+        <strong>Paste letters:</strong> Each box is a separate batch — paste one batch per box, or use a single box. All boxes are parsed together when you click ⚡ Parse Cases.<br>
+        Each case needs a <strong>code number</strong> (e.g. <em>XXXXXXXX-XXXXXXX</em>), must start with <strong>Dear</strong> and end with a recognised closing phrase.
+      </div>
+
+      <!-- Batch tag name input -->
+      <div style="margin:0 14px 10px; flex-shrink:0; display:flex; align-items:center; gap:10px;">
+        <label style="font-size:11px; font-weight:700; color:var(--sf-gray-7); text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap;">🏷️ Batch Tag Name</label>
+        <input class="sf-input" id="tlBatchTagInput" placeholder="e.g. Batch A, Jan 2026, Hardship Cases…" style="flex:1; font-size:12px;" maxlength="60">
+        <span style="font-size:11px; color:var(--sf-gray-5);">Optional — used to filter cases later</span>
+      </div>
+
+      <!-- Paste boxes area -->
+      <div id="tlPasteBoxes" style="display:flex; flex-direction:row; gap:8px; padding:0 14px 10px; overflow-x:auto; flex:1; min-height:0;">
+        <!-- Box 1 is always present -->
+        <div class="tl-paste-box" id="tlPasteBox_1">
+          <div class="tl-paste-box-hdr">
+            <span class="tl-paste-box-label">Batch 1</span>
+            <span class="tl-paste-box-count" id="tlPasteCount_1"></span>
+          </div>
+          <textarea class="tl-paste-ta tl-paste-ta-narrow" id="tlPasteTa" data-box="1" placeholder="Ctrl+V to paste…" spellcheck="false"></textarea>
+        </div>
+      </div>
+
+      <!-- Add batch button -->
+      <div style="padding:0 14px 10px; flex-shrink:0;">
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="tlAddBatch">＋ Add Batch Paste</button>
+        <span style="font-size:11px; color:var(--sf-gray-5); margin-left:8px;" id="tlTotalDetected"></span>
+      </div>
+
+    </div>
+    <div class="tl-modal-footer">
+      <span class="tl-modal-status" id="tlModalStatus">🔒 Nothing is stored or sent — data lives only in this browser tab.</span>
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="tlModalClearTa">Clear All</button>
+      <button class="sf-btn sf-btn-primary" id="tlModalParse">⚡ Parse Cases</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH SIMILAR ENQUIRY MODAL -->
+<div class="tl-modal-overlay" id="tlSimOverlay">
+  <div class="tl-modal tl-modal-wide tl-sim-modal">
+    <div class="tl-modal-hdr">
+      <span style="font-size:16px;">🔎</span>
+      <span class="tl-modal-title">Search Similar Enquiry</span>
+      <button class="tl-modal-close" id="tlSimClose">✕</button>
+    </div>
+    <div class="tl-modal-body" style="padding:16px 18px; gap:10px;">
+      <div class="tl-modal-hint">
+        Paste your enquiry text below and click <strong>Find Similar Cases</strong>. The tool will scan all loaded cases and rank them by how closely their content matches your text — based on word frequency and shared terms. Click a result to load it into the Editor.<br>
+        <span style="color:#c0392b; font-weight:600;">⚠️ Disclaimer: Results are suggestions only. Always verify the facts and details before using any case template.</span>
+      </div>
+      <textarea class="tl-paste-ta" id="tlSimInput" placeholder="Paste your enquiry text here…" spellcheck="false" style="min-height:160px; flex-shrink:0;"></textarea>
+      <!-- Keyword filter row -->
+      <div style="display:flex; align-items:center; gap:8px; flex-shrink:0; background:var(--sf-gray-1); border:1px solid var(--sf-gray-3); border-radius:6px; padding:8px 12px;">
+        <span style="font-size:11px; font-weight:700; color:var(--sf-gray-7); white-space:nowrap;">🔑 Keyword Filter</span>
+        <input class="sf-input" id="tlSimKeyword" placeholder="Type a keyword to search last column only (leave blank to use full text match)…" style="flex:1; font-size:12px;">
+        <span style="font-size:10px; color:var(--sf-gray-5); white-space:nowrap;">Searches last col</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+        <button class="sf-btn sf-btn-primary" id="tlSimFind">🔍 Find Similar Cases</button>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="tlSimClear">Clear</button>
+        <span class="tl-modal-status" id="tlSimStatus" style="flex:1;"></span>
+      </div>
+      <div id="tlSimResults" class="tl-sim-results"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="sf-main">
+
+  <!-- CASE LIBRARY VIEW -->
+  <div id="viewTemplates">
+
+    <!-- Top bar -->
+    <div class="tl-topbar">
+      <span style="font-size:16px;">📁</span>
+      <span class="tl-topbar-title">Case Library</span>
+      <span class="tl-badge" id="tlBadge"></span>
+      <div class="tl-search-wrap">
+        <input class="tl-search-input" id="tlSearchInput" placeholder="Search keyword across all cases…" disabled>
+      </div>
+      <span class="tl-result-count" id="tlResultCount"></span>
+      <button class="sf-btn sf-btn-sim sf-btn-sm" id="tlOpenSimilar" title="Find cases similar to your enquiry text">🔎 Search Similar Enquiry</button>
+      <button class="sf-btn sf-btn-primary sf-btn-sm" id="tlOpenPaste">＋ Paste Cases</button>
+
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="tlCopyLib" style="display:none;" title="Copy the entire library as a backup you can paste back later">📤 Copy Library</button>
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="tlClearAll" style="display:none;">🗑 Clear All</button>
+    </div>
+
+    <!-- Tag filter bar (shown when tags exist) -->
+    <div id="tlTagFilterBar" style="display:none; align-items:center; gap:8px; padding:7px 14px; background:var(--sf-gray-1); border-bottom:1px solid var(--sf-gray-3); flex-wrap:wrap;">
+      <span style="font-size:11px; font-weight:700; color:var(--sf-gray-7); white-space:nowrap;">🏷️ Filter by tag:</span>
+      <div id="tlTagChips" style="display:flex; gap:6px; flex-wrap:wrap; flex:1;"></div>
+      <button id="tlTagFilterAll" class="sf-btn sf-btn-neutral sf-btn-sm" style="font-size:11px;">Show All</button>
+    </div>
+
+    <!-- Results + Preview -->
+    <div class="tl-body">
+
+      <!-- Results list -->
+      <div class="tl-results-panel">
+        <div class="tl-panel-header">
+          <span class="tl-panel-label">Cases</span>
+          <span style="font-size:11px; color:var(--sf-gray-5);" id="tlSubCount"></span>
+          <div class="tl-sort-wrap" id="tlSortWrap" style="display:none;">
+            <span class="tl-sort-label">Sort col:</span>
+            <select class="tl-sort-select" id="tlSortCol">
+              <option value="">— None —</option>
+            </select>
+            <button class="tl-sort-btn" id="tlSortDir" title="Toggle sort direction">A→Z</button>
+          </div>
+        </div>
+        <div class="tl-results-list" id="tlResultsList">
+          <div class="tl-empty">
+            <div class="tl-empty-icon">📋</div>
+            <div class="tl-empty-ttl">No cases loaded yet</div>
+            <div class="tl-empty-sub">Click <strong>＋ Paste Cases</strong> above, then paste your Word or Excel table. Each row becomes a searchable card.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview panel -->
+      <div class="tl-preview-panel">
+
+        <!-- Panel tab switcher -->
+        <div class="tl-panel-header" style="flex-shrink:0; gap:0; padding:0; border-bottom:1px solid var(--sf-gray-3);">
+          <button class="tl-preview-tab active" id="tlTabPreview">🔍 Preview</button>
+          <button class="tl-preview-tab" id="tlTabBatch">📦 Copy in Batches</button>
+        </div>
+
+        <!-- TAB: Preview -->
+        <div id="tlPanePreview" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+          <div class="tl-preview-body" id="tlPreviewBody">
+            <div class="tl-preview-empty">
+              <span style="font-size:32px;">👆</span>
+              Select a case to preview all its fields here.
+            </div>
+          </div>
+          <div class="tl-preview-footer" id="tlPreviewFooter" style="display:none;">
+            <button class="sf-btn sf-btn-primary sf-btn-sm" id="tlUseBtn">⚡ Use in Editor</button>
+            <button class="sf-btn sf-btn-neutral sf-btn-sm" id="tlCopyBtn">📋 Copy Last Cell</button>
+          </div>
+        </div>
+
+        <!-- TAB: Batch Copy -->
+        <div id="tlPaneBatch" style="display:none; flex-direction:column; flex:1; min-height:0; overflow-y:auto; padding:14px; gap:14px;">
+          <div style="font-size:12px; color:var(--sf-gray-6); line-height:1.5;">
+            Split your library into batches and copy each one. Paste each batch into <strong>＋ Paste Cases</strong> to reload your library in chunks.
+          </div>
+
+          <!-- Batch size selector -->
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span style="font-size:12px; font-weight:600; color:var(--sf-gray-7);">Batch size (cases):</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;" id="tlBatchSizePills">
+              <button class="tl-batch-pill active" data-size="50">50</button>
+              <button class="tl-batch-pill" data-size="100">100</button>
+              <button class="tl-batch-pill" data-size="200">200</button>
+              <button class="tl-batch-pill" data-size="500">500</button>
+              <span style="display:flex; align-items:center; gap:4px;">
+                <input class="sf-input" id="tlBatchCustom" type="number" min="1" placeholder="Custom" style="width:70px; font-size:12px; padding:3px 7px;">
+                <button class="sf-btn sf-btn-neutral sf-btn-sm" id="tlBatchCustomApply">Set</button>
+              </span>
+            </div>
+          </div>
+
+          <!-- Generated batch buttons -->
+          <div id="tlBatchButtons" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:12px; color:var(--sf-gray-5); font-style:italic;">Load some cases first, then batch buttons will appear here.</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SMARTBOT VIEW -->
+  <div id="viewSmartBot">
+    <div class="tl-topbar">
+      <span style="font-size:16px;">🤖</span>
+      <span class="tl-topbar-title">SmartBot</span>
+      <span class="tl-badge" id="sbSentenceBadge" style="display:none;"></span>
+      <span style="font-size:11px; color:var(--sf-gray-5); flex:1;">Self-learning sentence categorisation</span>
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbOpenImportTaxonomy">📥 Import Taxonomy</button>
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbOpenSubMgr">🏷️ Sub-Enquiry Manager</button>
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbOpenBatchImport">📥 Import Sentences DB</button>
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbOpenBatchExport">📤 Export Sentences DB</button>
+    </div>
+    <div class="sb-body">
+      <div class="sb-panel sb-panel-left">
+        <div class="sb-panel-hdr">
+          <span class="sb-panel-title">📋 Review Queue</span>
+          <span class="sb-queue-badge" id="sbQueueBadge">0 remaining</span>
+        </div>
+        <div class="sb-panel-body" id="sbReviewArea">
+          <div class="sb-empty" id="sbReviewEmpty">
+            <div style="font-size:28px; margin-bottom:8px;">🤖</div>
+            <div style="font-weight:600; margin-bottom:4px;">No sentences to review</div>
+            <div style="font-size:11px; color:var(--sf-gray-5);">Cases must be loaded in the Case Library first. SmartBot will extract sentences from those cases automatically.</div>
+            <button class="sf-btn sf-btn-primary sf-btn-sm" style="margin-top:14px;" id="sbExtractBtn">⚡ Extract Sentences from Cases</button>
+          </div>
+          <div id="sbReviewCard" style="display:none; flex-direction:column; gap:12px;">
+            <div class="sb-sentence-card" id="sbSentenceCard">
+              <div class="sb-sentence-text" id="sbSentenceText"></div>
+              <div class="sb-sentence-meta" id="sbSentenceMeta"></div>
+              <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbFindInCaseLib" style="margin-top:8px; font-size:11px; width:100%;" title="Find a case containing this sentence in the Case Library">📁 Find in Case Library</button>
+            </div>
+            <div class="sb-cat-form" id="sbCatForm">
+              <!-- CURRENT TAGS LIST -->
+              <div style="margin-bottom:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+                  <span style="font-size:11px; font-weight:700; color:var(--sf-gray-7); text-transform:uppercase; letter-spacing:0.04em;">🏷️ Tags for this sentence</span>
+                </div>
+                <div id="sbTempTagsList" style="display:flex; flex-direction:column; gap:4px; min-height:24px;"></div>
+              </div>
+              <div style="font-size:10px; font-weight:700; color:var(--sf-gray-6); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px; padding-top:6px; border-top:1px solid var(--sf-gray-2);">＋ Add a Tag</div>
+              <div class="sb-field-row">
+                <label class="sb-field-label">Scheme</label>
+                <select class="sb-select" id="sbSchemeSelect"><option value="">— Select —</option></select>
+              </div>
+              <div class="sb-field-row">
+                <label class="sb-field-label">Category</label>
+                <select class="sb-select" id="sbCategorySelect" disabled><option value="">— Select Scheme first —</option></select>
+              </div>
+              <div class="sb-field-row">
+                <label class="sb-field-label">Enquiry</label>
+                <select class="sb-select" id="sbEnquirySelect" disabled><option value="">— Select Category first —</option></select>
+              </div>
+              <div class="sb-field-row">
+                <label class="sb-field-label">Sub-Enquiry</label>
+                <div style="flex:1; position:relative;" id="sbSubEnqWrapper">
+                  <!-- Search input always visible once Enquiry is selected -->
+                  <input class="sf-input" id="sbSubEnqSearch" placeholder="Search or select sub-enquiry…"
+                    style="width:100%; font-size:12px; box-sizing:border-box;" autocomplete="off">
+                  <!-- Hidden real value holder -->
+                  <input type="hidden" id="sbSubEnquirySelect" value="">
+                  <!-- Dropdown list -->
+                  <div id="sbSubEnqDropdown" style="
+                    display:none; position:fixed; z-index:9500; background:#fff;
+                    border:1px solid var(--sf-gray-3); border-radius:5px;
+                    box-shadow:0 4px 12px rgba(0,0,0,0.12); max-height:180px; overflow-y:auto;
+                    min-width:220px;">
+                  </div>
+                </div>
+              </div>
+              <!-- Add Tag button -->
+              <div style="margin-top:6px; display:flex; justify-content:flex-end;">
+                <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbAddTagBtn" style="font-size:11px; gap:4px;">＋ Add Tag</button>
+              </div>
+              <div id="sbNewSubEnquiryRow" style="display:none;" class="sb-field-row">
+                <label class="sb-field-label">New Sub-Enquiry</label>
+                <div style="display:flex; gap:5px; flex:1;">
+                  <input class="sf-input" id="sbNewSubEnquiryInput" placeholder="Type new sub-enquiry name…" style="flex:1; font-size:12px;">
+                  <button class="sf-btn sf-btn-primary sf-btn-sm" id="sbSaveSubEnquiry">Save</button>
+                  <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbCancelNewSub">Cancel</button>
+                </div>
+              </div>
+            </div>
+            <div class="sb-children-section">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                <span style="font-size:11px; font-weight:700; color:var(--sf-gray-7); text-transform:uppercase; letter-spacing:0.04em;">🔗 Variations / Child Sentences</span>
+                <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbAddChildBtn">＋ Add Variation</button>
+              </div>
+              <div id="sbChildList" style="display:flex; flex-direction:column; gap:5px;"></div>
+              <div id="sbChildInputRow" style="display:none; flex-direction:column; gap:5px; margin-top:6px;">
+                <textarea class="sb-child-input" id="sbChildInput" placeholder="Type a variation of this sentence…" rows="2"></textarea>
+                <div style="display:flex; gap:6px; justify-content:flex-end;">
+                  <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbChildCancel">Cancel</button>
+                  <button class="sf-btn sf-btn-primary sf-btn-sm" id="sbChildSave">Add Variation</button>
+                </div>
+              </div>
+            </div>
+            <div class="sb-action-row">
+              <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbIgnoreBtn">🚫 Ignore</button>
+              <div style="flex:1;"></div>
+              <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbSkipBtn">⏭ Skip</button>
+              <button class="sf-btn sf-btn-primary" id="sbCategoriseBtn">✓ Categorise</button>
+            </div>
+            <div style="margin-top:-4px;">
+              <button class="sf-btn sf-btn-neutral sf-btn-sm" style="width:100%; font-size:11px;" id="sbExtractBtnCard">⚡ Re-extract Sentences from Cases</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sb-panel sb-panel-mid">
+        <div class="sb-panel-hdr">
+          <span class="sb-panel-title">🗂 Taxonomy</span>
+          <span id="sbTaxBadge" style="font-size:11px; color:var(--sf-gray-5);"></span>
+        </div>
+        <div class="sb-panel-body" id="sbTaxPanel">
+          <div class="sb-empty" id="sbTaxEmpty">
+            <div style="font-size:28px; margin-bottom:8px;">📂</div>
+            <div style="font-weight:600; margin-bottom:4px;">No taxonomy loaded</div>
+            <div style="font-size:11px; color:var(--sf-gray-5);">Click <strong>Import Taxonomy</strong> above and paste your Excel table.</div>
+          </div>
+          <div id="sbTaxTree" style="display:none; flex-direction:column; gap:2px; overflow-y:auto;"></div>
+        </div>
+      </div>
+      <div class="sb-panel sb-panel-right">
+        <div class="sb-panel-hdr">
+          <span class="sb-panel-title">🔍 Sentence Viewer</span>
+          <span id="sbViewerCount" style="font-size:11px; color:var(--sf-gray-5);"></span>
+        </div>
+        <div style="padding:8px 10px; border-bottom:1px solid var(--sf-gray-3); flex-shrink:0;">
+          <input class="sf-input" id="sbViewerSearch" placeholder="Search sentences…" style="font-size:12px; width:100%;">
+          <div style="display:flex; gap:5px; margin-top:6px; flex-wrap:wrap;">
+            <select class="sb-select" id="sbViewerSchemeFilter" style="flex:1; font-size:11px; min-width:80px;"><option value="">All Schemes</option></select>
+            <select class="sb-select" id="sbViewerStatusFilter" style="flex:1; font-size:11px; min-width:80px;">
+              <option value="">All Statuses</option>
+              <option value="categorised">Categorised</option>
+              <option value="ignored">Ignored</option>
+            </select>
+          </div>
+        </div>
+        <div class="sb-viewer-list" id="sbViewerList">
+          <div class="sb-empty" id="sbViewerEmpty" style="padding:20px; text-align:center; font-size:12px; color:var(--sf-gray-5);">No sentences stored yet.</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /viewSmartBot -->
+
+  <!-- SMARTBOT SUB-ENQUIRY MANAGER MODAL -->
+  <div class="tl-modal-overlay" id="sbSubMgrModal">
+    <div class="tl-modal" style="width:min(92vw,680px);">
+      <div class="tl-modal-hdr">
+        <span style="font-size:18px;">🏷️</span>
+        <span class="tl-modal-title">Sub-Enquiry Manager</span>
+        <button class="tl-modal-close" id="sbSubMgrClose">✕</button>
+      </div>
+      <div class="tl-modal-body" style="flex-direction:column; gap:10px; padding:16px 18px;">
+
+        <!-- Filter row -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; flex-shrink:0;">
+          <select class="sb-select" id="sbSubMgrScheme" style="font-size:12px; min-width:130px;"><option value="">All Schemes</option></select>
+          <select class="sb-select" id="sbSubMgrCat" style="font-size:12px; min-width:140px;"><option value="">All Categories</option></select>
+          <select class="sb-select" id="sbSubMgrEnq" style="font-size:12px; min-width:160px;"><option value="">All Enquiries</option></select>
+          <input class="sf-input" id="sbSubMgrSearch" placeholder="Search sub-enquiries…" style="flex:1; min-width:120px; font-size:12px;">
+        </div>
+
+        <!-- Add new sub-enquiry inline row -->
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0; background:var(--sf-gray-1); border:1px solid var(--sf-gray-3); border-radius:6px; padding:8px 10px;">
+          <span style="font-size:11px; font-weight:700; color:var(--sf-gray-7); white-space:nowrap;">＋ Add New</span>
+          <select class="sb-select" id="sbSubMgrAddScheme" style="font-size:12px; flex:1;"><option value="">— Scheme —</option></select>
+          <select class="sb-select" id="sbSubMgrAddCat" style="font-size:12px; flex:1;" disabled><option value="">— Category —</option></select>
+          <select class="sb-select" id="sbSubMgrAddEnq" style="font-size:12px; flex:1;" disabled><option value="">— Enquiry —</option></select>
+          <input class="sf-input" id="sbSubMgrAddInput" placeholder="Sub-enquiry name…" style="flex:2; font-size:12px;">
+          <button class="sf-btn sf-btn-primary sf-btn-sm" id="sbSubMgrAddBtn">Add</button>
+        </div>
+
+        <!-- Results list -->
+        <div id="sbSubMgrList" style="display:flex; flex-direction:column; gap:5px; overflow-y:auto; max-height:340px; min-height:80px;">
+          <div style="font-size:12px; color:var(--sf-gray-5); font-style:italic; padding:10px 0;">Loading…</div>
+        </div>
+        <div id="sbSubMgrCount" style="font-size:11px; color:var(--sf-gray-5);"></div>
+      </div>
+      <div class="tl-modal-footer">
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbSubMgrClose2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SMARTBOT SENTENCE DETAIL MODAL -->
+  <div class="tl-modal-overlay" id="sbDetailModal">
+    <div class="tl-modal" style="width:min(96vw,720px);">
+      <div class="tl-modal-hdr">
+        <span style="font-size:18px;">✏️</span>
+        <span class="tl-modal-title">Sentence Details &amp; Edit Tags</span>
+        <button class="tl-modal-close" id="sbDetailModalClose">✕</button>
+      </div>
+      <div class="tl-modal-body" style="flex-direction:column; gap:0; padding:16px 18px; overflow-y:auto; max-height:70vh;" id="sbDetailBody">
+      </div>
+      <div class="tl-modal-footer">
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbDetailModalClose2">Close</button>
+        <button class="sf-btn sf-btn-primary sf-btn-sm" id="sbDetailSaveBtn">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SMARTBOT TAXONOMY IMPORT MODAL -->
+  <div class="tl-modal-overlay" id="sbTaxModal">
+    <div class="tl-modal" style="width:min(92vw,640px);">
+      <div class="tl-modal-hdr">
+        <span style="font-size:18px;">📥</span>
+        <span class="tl-modal-title">Import Taxonomy</span>
+        <button class="tl-modal-close" id="sbTaxModalClose">✕</button>
+      </div>
+      <div class="tl-modal-body" style="flex-direction:column; gap:10px;">
+        <div class="tl-modal-hint">
+          Paste your Excel table below. Each row should have <strong>3 columns</strong> separated by tabs:<br>
+          <code style="font-size:11px; background:#f0f0f0; padding:2px 6px; border-radius:3px;">Scheme &nbsp;[Tab]&nbsp; Category &nbsp;[Tab]&nbsp; Enquiry</code><br>
+          Example: <em>Member Records &nbsp;[Tab]&nbsp; Accounts Management &nbsp;[Tab]&nbsp; 3rd party SOA</em>
+        </div>
+        <textarea class="tl-paste-ta" id="sbTaxInput" placeholder="Paste Excel rows here…" style="min-height:200px; resize:vertical;" spellcheck="false"></textarea>
+        <div id="sbTaxPreview" style="font-size:11px; color:var(--sf-gray-6);"></div>
+      </div>
+      <div class="tl-modal-footer">
+        <span class="tl-modal-status" id="sbTaxStatus"></span>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbTaxClear">Clear</button>
+        <button class="sf-btn sf-btn-primary" id="sbTaxImport">⚡ Import Taxonomy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SMARTBOT BATCH EXPORT MODAL -->
+  <div class="tl-modal-overlay" id="sbExportModal">
+    <div class="tl-modal tl-modal-wide" style="width:min(92vw,780px);">
+      <div class="tl-modal-hdr">
+        <span style="font-size:18px;">📤</span>
+        <span class="tl-modal-title">Export Sentences Database</span>
+        <button class="tl-modal-close" id="sbExportModalClose">✕</button>
+      </div>
+      <div class="tl-modal-body" style="flex-direction:column; gap:12px;">
+        <div class="tl-modal-hint">
+          Exports only <strong>categorised &amp; ignored</strong> sentences — pending sentences are excluded. This keeps imports clean and avoids re-reviewing already-decided sentences.<br>
+          Paste each batch back using <strong>Import Sentences DB</strong> to restore in chunks. <strong>Taxonomy &amp; Sub-Enquiries</strong> are always included in every batch so each chunk is self-contained.
+        </div>
+
+        <!-- Batch size selector -->
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex-shrink:0;">
+          <span style="font-size:12px; font-weight:600; color:var(--sf-gray-7);">Batch size (sentences):</span>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;" id="sbBatchSizePills">
+            <button class="tl-batch-pill active" data-size="50">50</button>
+            <button class="tl-batch-pill" data-size="100">100</button>
+            <button class="tl-batch-pill" data-size="200">200</button>
+            <button class="tl-batch-pill" data-size="500">500</button>
+            <span style="display:flex; align-items:center; gap:4px;">
+              <input class="sf-input" id="sbBatchCustom" type="number" min="1" placeholder="Custom" style="width:70px; font-size:12px; padding:3px 7px;">
+              <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbBatchCustomApply">Set</button>
+            </span>
+          </div>
+          <span style="font-size:11px; color:var(--sf-gray-5);" id="sbExportTotalCount"></span>
+        </div>
+
+        <!-- Generated batch buttons -->
+        <div id="sbBatchButtons" style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:320px;">
+          <div style="font-size:12px; color:var(--sf-gray-5); font-style:italic;">Open Export to generate batch buttons.</div>
+        </div>
+      </div>
+      <div class="tl-modal-footer">
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbExportModalClose2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SMARTBOT BATCH IMPORT MODAL -->
+  <div class="tl-modal-overlay" id="sbImportModal">
+    <div class="tl-modal tl-modal-wide" style="width:min(92vw,820px);">
+      <div class="tl-modal-hdr">
+        <span style="font-size:18px;">📥</span>
+        <span class="tl-modal-title">Import Sentences Database</span>
+        <button class="tl-modal-close" id="sbImportModalClose">✕</button>
+      </div>
+      <div class="tl-modal-body" style="flex-direction:column; gap:0; padding:0;">
+
+        <!-- Hint bar -->
+        <div class="tl-modal-hint" style="margin:12px 14px 8px; flex-shrink:0;">
+          Paste previously exported SmartBot batches — one batch per box. All boxes are merged together when you click <strong>⚡ Import All</strong>. Sentences already categorised won't be overwritten unless the import has a categorised version.
+        </div>
+
+        <!-- Paste boxes area -->
+        <div id="sbImportBoxes" style="display:flex; flex-direction:row; gap:8px; padding:0 14px 10px; overflow-x:auto; flex:1; min-height:0;">
+          <!-- Box 1 always present -->
+          <div class="tl-paste-box" id="sbImportBox_1">
+            <div class="tl-paste-box-hdr">
+              <span class="tl-paste-box-label">Batch 1</span>
+              <span class="tl-paste-box-count" id="sbImportCount_1"></span>
+            </div>
+            <textarea class="tl-paste-ta tl-paste-ta-narrow" id="sbImportTa" data-box="1"
+              placeholder="Paste exported SmartBot data here…"
+              style="font-family:monospace; font-size:11px; resize:none; height:260px;"
+              spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <!-- Add batch button row -->
+        <div style="padding:0 14px 10px; flex-shrink:0; display:flex; align-items:center; gap:10px;">
+          <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbImportAddBox">＋ Add Batch Box</button>
+          <span class="tl-modal-status" id="sbImportStatus" style="flex:1;"></span>
+        </div>
+
+      </div>
+      <div class="tl-modal-footer">
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbImportClearAll">🗑 Clear All</button>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="sbImportModalClose2">Cancel</button>
+        <button class="sf-btn sf-btn-primary" id="sbImportLoad">⚡ Import All</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- CONTENT -->
+  <div class="sf-content" id="sfContent">
+
+    <!-- TOOLBAR -->
+    <div class="sf-toolbar">
+      <!-- GROUP 1: Grammar & Spelling (green) — Maomao + Tetia -->
+      <div class="toolbar-group toolbar-group-green">
+        <span class="toolbar-group-label">📝 Grammar &amp; Spelling</span>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="btnGrammarCheck">🔍 Grammar</button>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="btnSpellingCheck">✏️ Spelling</button>
+        <button class="btn-info-i" data-info="Maomao checks grammar, jargon and tone. Tetia checks spelling. Both open their own chatbox so you can review issues with their help." title="About Grammar &amp; Spelling">i</button>
+      </div>
+
+      <!-- GROUP 2: Autofill & Find Similar (blue) — Coco -->
+      <div class="toolbar-group toolbar-group-blue">
+        <span class="toolbar-group-label">✨ Autofill &amp; Search</span>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="btnAutofillToggle" style="gap:7px;">
+          <span id="autofillDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sf-gray-4);transition:background 0.2s;flex-shrink:0;"></span>
+          Autofill
+        </button>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="btnFindSimilar">🔄 Find Similar</button>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="btnSmartLink">🔗 Smart Link</button>
+        <button class="btn-info-i" data-info="Autofill suggests sentences as you type. Find Similar finds matching sentences from the Case Library. Smart Link predicts the next sentence based on your cursor context." title="About Autofill &amp; Search">i</button>
+      </div>
+
+      <!-- GROUP 3: Hyperlinks (teal) — Frieren -->
+      <div class="toolbar-group toolbar-group-teal">
+        <span class="toolbar-group-label">🔮 Hyperlinks</span>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="btnInsertHyperlink">🔗 Insert Link</button>
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="btnAutoHyperlink">⚡ Auto Links</button>
+        <button class="btn-info-i" data-info="Frieren handles hyperlinks. Highlight text then use Insert Link, or paste rich text from Word and use Auto Links to detect and apply all hyperlinks at once." title="About Hyperlinks">i</button>
+      </div>
+    </div>
+
+    <!-- Hidden stubs for backward-compat with existing JS references -->
+    <div style="display:none;">
+      <button id="btnProcess">Apply</button>
+      <button id="btnGrammarClose">×</button>
+      <div id="grammarPanel"><div id="grammarResults"></div><span id="grammarTitle"></span><span id="grammarStatus"></span></div>
+      <span id="hlPairBadge"></span>
+    </div>
+
+    <!-- PANELS -->
+    <div class="panels-row">
+
+      <!-- INPUT PANEL -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <span class="panel-title">📥 Paste Text Here (Input)</span>
+          <span class="text-muted" id="inputWordCount">0 words</span>
+          <button class="sf-btn sf-btn-neutral sf-btn-xs" id="btnClearInput" style="margin-left:auto;">Clear</button>
+        </div>
+
+        <!-- FORMATTING TOOLBAR -->
+        <div class="fmt-toolbar" id="fmtToolbar">
+          <div class="fmt-group">
+            <button class="fmt-btn" id="fmtBold" title="Bold (Ctrl+B)"><b>B</b></button>
+            <button class="fmt-btn" id="fmtItalic" title="Italic (Ctrl+I)"><i>I</i></button>
+            <button class="fmt-btn" id="fmtUnderline" title="Underline (Ctrl+U)"><u>U</u></button>
+          </div>
+          <div class="fmt-sep"></div>
+          <div class="fmt-group">
+            <button class="fmt-btn" id="fmtBullet" title="Bullet List">&#8226; List</button>
+            <button class="fmt-btn" id="fmtNumbered" title="Numbered List">1. List</button>
+          </div>
+          <div class="fmt-sep"></div>
+          <div class="fmt-group fmt-color-group">
+            <span class="fmt-color-label">A</span>
+            <div class="fmt-color-swatch" id="fmtColorSwatch" title="Text Colour"></div>
+            <div class="fmt-color-palette" id="fmtColorPalette">
+              <button class="fmt-color-chip" data-color="#201f1e" style="background:#201f1e;" title="Black"></button>
+              <button class="fmt-color-chip" data-color="#c00000" style="background:#c00000;" title="Red"></button>
+              <button class="fmt-color-chip" data-color="#e67e00" style="background:#e67e00;" title="Orange"></button>
+              <button class="fmt-color-chip fmt-color-chip--yellow" data-color="#c8a000" style="background:#f0c000;" title="Yellow"></button>
+              <button class="fmt-color-chip" data-color="#2e844a" style="background:#2e844a;" title="Green"></button>
+              <button class="fmt-color-chip" data-color="#0176d3" style="background:#0176d3;" title="Blue"></button>
+              <button class="fmt-color-chip" data-color="#7526e3" style="background:#7526e3;" title="Purple"></button>
+              <button class="fmt-color-chip fmt-color-chip--reset" data-color="" title="Remove colour">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="rich-editor" id="inputEditor" contenteditable="true" spellcheck="true"
+               data-placeholder="Paste your text here. Hyperlinks will be preserved…"></div>
+        </div>
+      </div>
+
+      <!-- OUTPUT PANEL -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <span class="panel-title">📤 Copy Text Here (Output)</span>
+          <span class="text-muted" id="outputWordCount">0 words</span>
+          <div style="margin-left:auto; display:flex; gap:5px;">
+            <button class="sf-btn sf-btn-neutral sf-btn-xs" id="btnCopyOutput" title="Copy output text with hyperlinks preserved">📋 Copy</button>
+            <button class="sf-btn sf-btn-neutral sf-btn-xs" id="btnClearOutput">Clear</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="output-display" id="outputDisplay"></div>
+        </div>
+      </div>
+
+    </div><!-- /panels-row -->
+  </div><!-- /sf-content -->
+
+  <!-- DRAWER -->
+  <div class="sf-drawer" id="sfDrawer">
+    <div class="sf-drawer-toggle" id="drawerToggle" title="Toggle Word Replacer">◀</div>
+
+    <div class="sf-drawer-header">
+      <span>🔁</span>
+      <span class="sf-drawer-title">Replacer &amp; Hyperlinks</span>
+      <span class="sf-badge" id="pairCountBadge">0</span>
+    </div>
+
+    <!-- Drawer Tabs -->
+    <div class="drawer-tabs">
+      <button class="drawer-tab-btn active" data-drawtab="replacer">🔁 Word Replacer</button>
+      <button class="drawer-tab-btn" data-drawtab="hyperlinks">🔗 Hyperlinks</button>
+    </div>
+
+    <!-- TAB: Word Replacer -->
+    <div class="drawer-tab-panel active" id="tabReplacer" style="flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+      <!-- Perspective Switcher -->
+      <div class="perspective-switcher" style="flex-shrink:0;">
+        <div class="perspective-switcher-label">
+          👤 Perspective Quick-Switch
+          <span id="perspActiveLabel" style="margin-left:auto; font-size:10px; font-style:italic; font-weight:400;"></span>
+        </div>
+        <div class="perspective-pills" id="perspPills">
+          <button class="persp-pill persp-pill-none active" data-persp="none">— None</button>
+          <button class="persp-pill" data-persp="he" style="--pill-bg:#dbeeff;">👦 He / Him</button>
+          <button class="persp-pill" data-persp="she" style="--pill-bg:#ffe4f2;">👧 She / Her</button>
+          <button class="persp-pill" data-persp="they" style="--pill-bg:#e4f5e4;">🧑 They / Them</button>
+          <button class="persp-pill" data-persp="name" style="--pill-bg:#f5ece4;">✏️ Custom…</button>
+        </div>
+        <!-- Custom name row (hidden by default) -->
+        <div id="perspCustomRow" style="display:none; margin-top:8px; display:none; flex-direction:column; gap:5px;">
+          <div style="font-size:11px; color:var(--sf-gray-6); font-weight:600;">Replace "you/your" with a name:</div>
+          <div style="display:flex; gap:5px; align-items:center;">
+            <input class="sf-input" id="perspCustomName" placeholder="e.g. John" style="font-size:12px; padding:4px 8px;">
+            <button class="sf-btn sf-btn-primary sf-btn-sm" id="btnApplyCustomPersp">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drawer toolbar -->
+      <div style="padding:8px 10px; border-bottom:1px solid var(--sf-gray-3); display:flex; gap:6px; align-items:center; flex-wrap:wrap; flex-shrink:0;">
+        <button class="sf-btn sf-btn-neutral sf-btn-sm" id="btnAddGroup">＋ Group</button>
+        <div class="sort-row" style="margin-left:auto;">
+          <span class="text-muted">Sort:</span>
+          <select class="sf-select" id="sortOrder">
+            <option value="manual">Manual</option>
+            <option value="alpha">A–Z</option>
+            <option value="created">Created</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sf-drawer-body" id="drawerBody" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:10px;"></div>
+    </div><!-- /tabReplacer -->
+
+    <!-- TAB: Hyperlink Pairs -->
+    <div class="drawer-tab-panel" id="tabHyperlinks" style="flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+      <div style="padding:8px 10px; border-bottom:1px solid var(--sf-gray-3); font-size:11px; color:var(--sf-gray-6); flex-shrink:0;">
+        Hyperlinks added via <strong>Insert Link</strong> or <strong>Auto Links</strong> appear here.
+        Toggle <em>Specific Hyperlinks Only</em> to link individual occurrences differently.
+      </div>
+      <div style="flex:1; min-height:0; overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:7px;" id="hlSectionBody">
+        <div class="hl-empty" id="hlEmptyMsg">No hyperlink pairs yet.<br>Use <strong>🔗 Insert Link</strong> or <strong>⚡ Auto Links</strong> in the toolbar.</div>
+      </div>
+    </div><!-- /tabHyperlinks -->
+
+  </div><!-- /sf-drawer -->
+
+</div><!-- /sf-main -->
+
+<!-- ===== PRESETS MODAL ===== -->
+<div class="sf-modal-overlay" id="presetsModal">
+  <div class="sf-modal">
+    <div class="sf-modal-header">
+      <span>📂</span>
+      <span class="sf-modal-title">Presets</span>
+      <span class="sf-modal-close" id="presetsClose">✕</span>
+    </div>
+    <div class="sf-modal-body">
+      <div style="display:flex; gap:8px; margin-bottom:14px; align-items:center;">
+        <input class="sf-input" id="presetNameInput" placeholder="New preset name…" style="flex:1;">
+        <button class="sf-btn sf-btn-primary" id="btnSavePreset">Save Current</button>
+      </div>
+      <div id="presetList"></div>
+    </div>
+    <div class="sf-modal-footer">
+      <button class="sf-btn sf-btn-neutral" id="presetsCancel">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SAVE/LOAD MODAL ===== -->
+<div class="sf-modal-overlay" id="saveLoadModal">
+  <div class="sf-modal">
+    <div class="sf-modal-header">
+      <span>💾</span>
+      <span class="sf-modal-title">Save / Load Configuration</span>
+      <span class="sf-modal-close" id="saveLoadClose">✕</span>
+    </div>
+    <div class="sf-modal-body">
+      <p style="margin-bottom:12px; color:var(--sf-gray-6); font-size:13px;">
+        Copy the text below to save your configuration. To load, paste it back and click <strong>Load</strong>.
+      </p>
+      <textarea class="sf-input" id="saveLoadTextarea" rows="10" style="font-family:monospace; font-size:11px; resize:vertical; height:220px;" placeholder="Paste saved configuration here to load…"></textarea>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="sf-btn sf-btn-primary" id="btnExportConfig">📋 Export (Copy to Clipboard)</button>
+        <button class="sf-btn sf-btn-success" id="btnImportConfig">📂 Load from Text</button>
+      </div>
+    </div>
+    <div class="sf-modal-footer">
+      <button class="sf-btn sf-btn-neutral" id="saveLoadCancel">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+
+
+
+<!-- ===== TETIA GRAMMAR BOT ===== -->
+<div class="tetia-fab" id="tetiaFab" title="Tetia Spelling Check!">
+  <img data-isrc="IMG_TETIA" alt="Tetia" style="width:100%;height:100%;object-fit:cover;object-position:top center;pointer-events:none;">
+</div>
+
+<div class="tetia-panel" id="tetiaPanel">
+  <div class="tetia-header">
+    <div class="tetia-avatar"><img data-isrc="IMG_TETIA" alt="Tetia" style="width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:50%;"></div>
+    <div>
+      <div class="tetia-name">✨ Tetia</div>
+      <div class="tetia-sub">Spelling Wizard</div>
+    </div>
+    <button class="tetia-close" id="tetiaClose">✕</button>
+  </div>
+  <div class="tetia-body" id="tetiaBody">
+    <div class="tetia-empty">Click "Check my text!" to cast Spelling Magic~ 🪄</div>
+  </div>
+  <div class="tetia-footer">
+    <button class="tetia-check-btn" id="tetiaCheckBtn">🔍 Check my text!</button>
+  </div>
+</div>
+
+
+<!-- ===== MAOMAO FAB ===== -->
+<div class="maomao-fab" id="maomaoFab" title="Chat with Maomao">
+  <img data-isrc="IMG_MAOMAO" alt="Maomao">
+</div>
+
+<!-- ===== MAOMAO PANEL ===== -->
+<div class="maomao-panel" id="maomaoPanel">
+  <div class="maomao-panel-header">
+    <div class="maomao-panel-avatar">
+      <img data-isrc="IMG_MAOMAO" alt="Maomao">
+    </div>
+    <div class="maomao-panel-info">
+      <div class="maomao-panel-name">Maomao</div>
+      <div class="maomao-panel-sub">
+        <span class="mao-online-dot"></span>
+        Writing Style Advisor · Apothecary
+      </div>
+    </div>
+    <button class="maomao-close-btn" id="maomaoClose">✕</button>
+  </div>
+
+  <div class="maomao-quick-bar">
+    <button class="mao-quick-btn" data-mode="grammar">📝 Grammar</button>
+    <button class="mao-quick-btn" data-mode="jargon">🚫 Jargon</button>
+    <button class="mao-quick-btn" data-mode="formal">🎩 Formal</button>
+    <button class="mao-quick-btn" data-mode="sensitiveids">🔏 Sensitive IDs</button>
+  </div>
+
+  <div class="maomao-messages" id="maomaoMessages">
+    <div class="mao-msg">
+      <div class="mao-msg-avatar"><img data-isrc="IMG_MAOMAO" alt="Maomao"></div>
+      <div class="mao-bubble">
+        …You have a question about writing? I'll hear it, I suppose.<br><br>
+        I'm <strong>Maomao</strong>. I can point out wordy phrases, passive constructions, and awkward phrasing — the kind of things that make readers wrinkle their noses.<br><br>
+        Ask me anything, or just describe your problem. I'll give you a straight answer. 🍵
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== PASTE DEBUGGER MODAL ===== -->
+<div class="sf-modal-overlay" id="pasteDebugModal" style="z-index:9999">
+  <div class="sf-modal" style="max-width:780px;width:96vw">
+    <div class="sf-modal-header">
+      <span class="sf-modal-title">🔍 Paste Debugger <span style="font-size:11px;font-weight:400;color:#888">(Ctrl+Shift+D to open after pasting)</span></span>
+      <button class="sf-modal-close" id="pasteDebugClose">✕</button>
+    </div>
+    <div class="sf-modal-body" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:#706e6b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Plain text from clipboard</div>
+          <textarea id="dbgPlaintext" readonly style="width:100%;height:140px;font-family:monospace;font-size:11px;resize:vertical;border:1px solid #e5e5e5;border-radius:4px;padding:8px;color:#3e3e3c;background:#f9f9f9"></textarea>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:#706e6b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Sanitized HTML output</div>
+          <textarea id="dbgSanitized" readonly style="width:100%;height:140px;font-family:monospace;font-size:11px;resize:vertical;border:1px solid #e5e5e5;border-radius:4px;padding:8px;color:#3e3e3c;background:#f9f9f9"></textarea>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#706e6b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Raw HTML from clipboard (Word source)</div>
+        <textarea id="dbgRaw" readonly style="width:100%;height:180px;font-family:monospace;font-size:11px;resize:vertical;border:1px solid #e5e5e5;border-radius:4px;padding:8px;color:#3e3e3c;background:#f9f9f9"></textarea>
+      </div>
+      <div style="font-size:11px;color:#888;font-style:italic">Paste something into the input box first, then open this debugger. Share the "Raw HTML" section if formatting is still wrong — it shows exactly what Word sent.</div>
+    </div>
+    <div class="sf-modal-footer">
+      <button class="sf-btn sf-btn-neutral" id="pasteDebugClose2">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COCO BOT PANEL ===== -->
+<div class="coco-panel" id="cocoPanel">
+  <div class="coco-header">
+    <div class="coco-avatar" style="padding:0;overflow:hidden;"><img data-isrc="IMG_COCO" alt="Coco" style="width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:50%;"></div>
+    <div style="flex:1; min-width:0;">
+      <div class="coco-name">Coco</div>
+      <div class="coco-sub">Autofill &amp; Sentence Search · Witch Apprentice</div>
+    </div>
+    <button class="coco-close" id="cocoClose">✕</button>
+  </div>
+  <div class="coco-quick-bar">
+    <button class="coco-quick-btn" id="cocoToggleAutofill">⚡ Toggle Autofill</button>
+    <button class="coco-quick-btn" id="cocoFindSimilar">🔄 Find Similar</button>
+    <button class="coco-quick-btn" id="cocoSmartLink">🔗 Smart Link</button>
+  </div>
+  <div class="coco-messages" id="cocoMessages">
+    <div class="coco-msg">
+      <div class="coco-msg-avatar" style="padding:0;overflow:hidden;"><img data-isrc="IMG_COCO" alt="Coco" style="width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:50%;"></div>
+      <div class="coco-bubble">
+        Oh! You came to the right place! ✨<br><br>
+        I'm <strong>Coco</strong>! I can help you find sentences similar to what you've written, or turn on <em>Autofill Suggestions</em> so I can whisper matching sentences as you type!<br><br>
+        Select a sentence in the editor and click <strong>Find Similar</strong> to search the Case Library. 📖
+      </div>
+    </div>
+  </div>
+  <!-- Fused Find Similar area (replaces floating overlay) -->
+  <div class="coco-sim-area" id="cocoSimArea">
+    <div class="coco-sim-query" id="cocoSimQuery"></div>
+    <div class="coco-sim-list" id="cocoSimList"></div>
+    <div class="coco-sim-footer">Click <strong>↩ Use</strong> to replace your selected sentence in the editor.</div>
+  </div>
+  <!-- Smart Link area -->
+  <div class="coco-sim-area" id="cocoSmartLinkArea">
+    <div class="coco-sl-controls">
+      <div class="coco-sl-label">Sensitivity Mode</div>
+      <div class="coco-sl-mode-row">
+        <button class="coco-sl-mode-btn active" id="cocoSlModeWord">WORD</button>
+        <button class="coco-sl-mode-btn" id="cocoSlModeSentence">SENTENCE</button>
+      </div>
+      <div class="coco-sl-word-opt" id="cocoSlWordOpt">
+        <label class="coco-sl-label" for="cocoSlWordCount">Read last N words</label>
+        <input type="number" id="cocoSlWordCount" class="coco-sl-num-input" value="5" min="1" max="30">
+      </div>
+      <button class="sf-btn sf-btn-primary sf-btn-sm" id="cocoSlRun" style="margin-top:8px;width:100%;">🔗 Find Next Sentence</button>
+    </div>
+    <div class="coco-sim-query" id="cocoSlQuery" style="display:none;"></div>
+    <div class="coco-sim-list" id="cocoSlList"></div>
+    <div class="coco-sim-footer" id="cocoSlFooter" style="display:none;">Click <strong>↩ Insert</strong> to add the sentence after your cursor.</div>
+  </div>
+</div>
+
+<!-- ===== FRIEREN BOT PANEL ===== -->
+<div class="frieren-panel" id="frierenPanel">
+  <div class="frieren-header">
+    <div class="frieren-avatar" style="padding:0;overflow:hidden;"><img data-isrc="IMG_FRIEREN" alt="Frieren" style="width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:50%;"></div>
+    <div style="flex:1; min-width:0;">
+      <div class="frieren-name">Frieren</div>
+      <div class="frieren-sub">Hyperlink Specialist · Ancient Mage</div>
+    </div>
+    <button class="frieren-close" id="frierenClose">✕</button>
+  </div>
+  <div class="frieren-quick-bar">
+    <button class="frieren-quick-btn" id="frierenInsertLink">🔗 Insert Link</button>
+    <button class="frieren-quick-btn" id="frierenAutoLinks">⚡ Auto Links</button>
+  </div>
+  <div class="frieren-messages" id="frierenMessages">
+    <div class="frieren-msg">
+      <div class="frieren-msg-avatar" style="padding:0;overflow:hidden;"><img data-isrc="IMG_FRIEREN" alt="Frieren" style="width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:50%;"></div>
+      <div class="frieren-bubble">
+        …I can handle the hyperlinks.<br><br>
+        Highlight any word or phrase in the editor, then click <strong>Insert Link</strong>. I'll attach a URL to it precisely.<br><br>
+        Or use <strong>Auto Links</strong> — paste text from Word and I'll detect and apply every hyperlink automatically. It's efficient.
+      </div>
+    </div>
+  </div>
+  <!-- Fused Insert Hyperlink area -->
+  <div class="frieren-hl-area" id="frierenInsertArea">
+    <div class="frieren-hl-section-label">🔗 Insert Hyperlink</div>
+    <div class="frieren-hl-body">
+      <div class="frieren-insert-phrase">Selected text: <strong id="frierenInsertPhraseDisplay">—</strong></div>
+      <div>
+        <label class="section-label" style="margin-bottom:4px;">Hyperlink URL</label>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input class="sf-input" id="frierenInsertUrlInput" placeholder="https://example.com/..." style="flex:1; font-size:12px;">
+          <button class="sf-btn sf-btn-neutral sf-btn-sm" id="frierenInsertGoToLink" title="Open link in new tab">↗</button>
+        </div>
+      </div>
+    </div>
+    <div class="frieren-hl-footer">
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="frierenInsertCancel">Cancel</button>
+      <button class="sf-btn sf-btn-primary sf-btn-sm" id="frierenInsertOk">✓ OK</button>
+    </div>
+  </div>
+  <!-- Fused Auto Hyperlinks area -->
+  <div class="frieren-hl-area" id="frierenAutoArea">
+    <div class="frieren-hl-section-label">⚡ Automatic Hyperlink Addition</div>
+    <div class="frieren-hl-body">
+      <div class="frieren-hint-box">
+        <strong>Paste text with hyperlinks</strong> (from Word or any document) below. I will detect all hyperlinked phrases and apply them to your Input Text automatically.
+      </div>
+      <div
+        class="frieren-paste-area"
+        id="frierenAutoPasteArea"
+        contenteditable="true"
+        data-placeholder="Paste your text with hyperlinks here (Ctrl+V)…"
+        data-empty="true"
+        spellcheck="false"
+      ></div>
+      <div class="frieren-auto-results" id="frierenAutoResults">
+        <div style="font-size:10px; font-weight:700; color:var(--sf-gray-6); margin-bottom:3px; text-transform:uppercase; letter-spacing:0.05em;">Detected hyperlinks</div>
+        <div id="frierenAutoResultRows"></div>
+      </div>
+    </div>
+    <div class="frieren-hl-footer">
+      <span class="frieren-auto-status" id="frierenAutoStatus">Paste text above to detect hyperlinks…</span>
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="frierenAutoCancel">Cancel</button>
+      <button class="sf-btn sf-btn-primary sf-btn-sm" id="frierenAutoAnalyse">🔍 Analyse</button>
+      <button class="sf-btn sf-btn-success sf-btn-sm" id="frierenAutoApply" style="display:none;">✓ Apply Hyperlinks</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== INFO TOOLTIP ===== -->
+<div class="info-tooltip" id="infoTooltip"></div>
+
+<!-- ===== INSERT HYPERLINK MODAL ===== -->
+<div class="hl-insert-overlay" id="hlInsertOverlay">
+  <div class="hl-insert-popup">
+    <div class="hl-insert-header">
+      <span>🔗</span>
+      <span style="flex:1;">Insert Hyperlink</span>
+      <span style="cursor:pointer; color:rgba(255,255,255,0.7); font-size:18px;" id="hlInsertClose">✕</span>
+    </div>
+    <div class="hl-insert-body">
+      <div class="hl-insert-phrase-label">Selected text: <strong id="hlInsertPhraseDisplay">—</strong></div>
+      <div>
+        <label class="section-label" style="margin-bottom:4px;">Hyperlink URL</label>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input class="sf-input" id="hlInsertUrlInput" placeholder="https://example.com/..." style="flex:1; font-size:12px;">
+          <button class="sf-btn sf-btn-neutral sf-btn-sm" id="hlInsertGoToLink" title="Open link in new tab">Go to Link ↗</button>
+        </div>
+      </div>
+    </div>
+    <div class="hl-insert-footer">
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="hlInsertCancel">Cancel</button>
+      <button class="sf-btn sf-btn-primary sf-btn-sm" id="hlInsertOk">✓ OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AUTO HYPERLINKS MODAL ===== -->
+<div class="hl-auto-overlay" id="hlAutoOverlay">
+  <div class="hl-auto-modal">
+    <div class="hl-auto-header">
+      <span style="font-size:18px;">⚡</span>
+      <span style="flex:1; font-size:14px; font-weight:700;">Automatic Hyperlink Addition</span>
+      <span style="cursor:pointer; color:rgba(255,255,255,0.7); font-size:18px;" id="hlAutoClose">✕</span>
+    </div>
+    <div class="hl-auto-body">
+      <div class="hl-auto-hint">
+        <strong>Paste text with hyperlinks</strong> (from Word or any document) into the box below. The tool will detect all hyperlinked phrases, count how many times each appears in your Input Text, and apply them accordingly.<br>
+        If the pasted source has <em>3</em> links for "account closure form" but your input only has <em>1</em>, only that 1 will be linked. If your input has more, only the first N will be linked.
+      </div>
+      <div
+        class="hl-auto-paste-area"
+        id="hlAutoPasteArea"
+        contenteditable="true"
+        data-placeholder="Paste your text with hyperlinks here (Ctrl+V)…"
+        data-empty="true"
+        spellcheck="false"
+      ></div>
+      <div class="hl-auto-results" id="hlAutoResults">
+        <div style="font-size:11px; font-weight:700; color:var(--sf-gray-6); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;">Detected hyperlinks</div>
+        <div id="hlAutoResultRows"></div>
+      </div>
+    </div>
+    <div class="hl-auto-footer">
+      <span class="hl-auto-status" id="hlAutoStatus">Paste text above to detect hyperlinks…</span>
+      <button class="sf-btn sf-btn-neutral sf-btn-sm" id="hlAutoCancel">Cancel</button>
+      <button class="sf-btn sf-btn-primary sf-btn-sm" id="hlAutoAnalyse">🔍 Analyse</button>
+      <button class="sf-btn sf-btn-success sf-btn-sm" id="hlAutoApply" style="display:none;">✓ Apply Hyperlinks</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== SMART LINK PANEL ===== -->
+<div class="sl-panel" id="slPanel">
+  <div class="sl-panel-header">
+    <span>🔗 Smart Link</span>
+    <button class="sl-panel-close" id="slPanelClose">✕</button>
+  </div>
+  <div class="sl-panel-controls">
+    <div class="sl-label">Sensitivity Mode</div>
+    <div class="sl-mode-row">
+      <button class="sl-mode-btn active" id="slModeWord">WORD</button>
+      <button class="sl-mode-btn" id="slModeSentence">SENTENCE</button>
+    </div>
+    <div class="sl-word-opt" id="slWordOpt">
+      <label class="sl-label" for="slWordCount">Read last N words</label>
+      <input type="number" id="slWordCount" class="sl-num-input" value="5" min="1" max="30">
+    </div>
+    <button class="sf-btn sf-btn-primary sf-btn-sm" id="slRun" style="width:100%;margin-top:6px;">🔗 Find Next Sentence</button>
+  </div>
+  <div class="sl-query" id="slQuery" style="display:none;"></div>
+  <div class="sl-list" id="slList"></div>
+  <div class="sl-footer" id="slFooter" style="display:none;">Click <strong>↩ Insert</strong> to add the sentence after your cursor.</div>
+</div>
+
+<!-- ===== EXTERNAL SCRIPTS (load order matters) ===== -->
+<script src="images.js"></script>
+<script src="main.js"></script>
+<script src="bots.js"></script>
+<script src="caselibrary.js"></script>
+<script src="autofill.js"></script>
+<script src="hyperlinks.js"></script>
+<script src="uiwiring.js"></script>
+<script src="smartbot.js"></script>
+
+<script>
+  // Safe tab wiring — runs after all scripts are loaded so tlSwitchTab is defined
+  document.getElementById('tabEditor').addEventListener('click', function() { tlSwitchTab('editor'); });
+  document.getElementById('tabTemplates').addEventListener('click', function() { tlSwitchTab('templates'); });
+  document.getElementById('tabSmartBot').addEventListener('click', function() { tlSwitchTab('smartbot'); });
+  document.getElementById('tlTabPreview').addEventListener('click', function() { tlSwitchPreviewTab('preview'); });
+  document.getElementById('tlTabBatch').addEventListener('click', function() { tlSwitchPreviewTab('batch'); });
+</script>
+
+</body>
+</html>
